@@ -6,6 +6,7 @@ import 'package:flutter_starter_package/core/theme/app_colors.dart';
 import 'package:flutter_starter_package/core/widgets/input_field.dart';
 import 'package:flutter_starter_package/core/widgets/password_field.dart';
 import 'package:flutter_starter_package/core/widgets/primary_button.dart';
+import 'package:flutter_starter_package/core/widgets/themed_back_button.dart';
 import 'package:flutter_starter_package/features/auth/domain/providers/auth_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:math' as math;
@@ -94,6 +95,15 @@ class _RegisterStepperScreenState extends ConsumerState<RegisterStepperScreen> w
     }
   }
   
+  void _previousStep() {
+    if (_currentStep > 0) {
+      setState(() {
+        _currentStep--;
+        _errorMessage = null;
+      });
+    }
+  }
+  
   Future<void> _register() async {
     setState(() {
       _isLoading = true;
@@ -141,11 +151,12 @@ class _RegisterStepperScreenState extends ConsumerState<RegisterStepperScreen> w
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          color: AppColors.foreground,
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: _currentStep > 0
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: _previousStep,
+              )
+            : const ThemedBackButton(),
       ),
       body: SafeArea(
         child: Stack(

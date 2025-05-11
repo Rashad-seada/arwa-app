@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Primary colors - Updated with a more vibrant gradient palette
-  static const Color primary = Color(0xFF5E60CE);
+  static const Color primary = Color(0xFFB1EDE8);
   static const Color primaryLight = Color(0xFF6930C3);
   static const Color primaryDark = Color(0xFF4E4B9E);
   static const Color accent = Color(0xFF64DFDF);

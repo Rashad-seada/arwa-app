@@ -6,6 +6,7 @@ import 'package:flutter_starter_package/core/theme/app_colors.dart';
 import 'package:flutter_starter_package/core/widgets/input_field.dart';
 import 'package:flutter_starter_package/core/widgets/primary_button.dart';
 import 'package:flutter_starter_package/core/widgets/social_login_button.dart';
+import 'package:flutter_starter_package/core/widgets/themed_back_button.dart';
 import 'package:flutter_starter_package/features/auth/domain/providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -87,11 +88,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          color: AppColors.foreground,
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const ThemedBackButton(),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

@@ -6,6 +6,7 @@ import 'package:flutter_starter_package/core/config/locale_constants.dart';
 import 'package:flutter_starter_package/core/providers/locale_provider.dart';
 import 'package:flutter_starter_package/core/theme/app_colors.dart';
 import 'package:flutter_starter_package/core/widgets/gradient_container.dart';
+import 'package:flutter_starter_package/core/widgets/themed_back_button.dart';
 import 'package:flutter_starter_package/features/auth/domain/providers/auth_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -19,11 +20,10 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('settings.settings'.tr()),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: const ThemedBackButton(),
+        title: Text('settings.title'.tr()),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
