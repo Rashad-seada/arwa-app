@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 /// A back button that automatically adapts to the current theme.
 /// 
@@ -20,7 +21,14 @@ class ThemedBackButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.arrow_back),
       color: color,
-      onPressed: onPressed ?? () => Navigator.pop(context),
+      onPressed: onPressed ?? () {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          // Fallback to initial route if we can't pop
+          context.go('/settings');
+        }
+      },
     );
   }
 } 

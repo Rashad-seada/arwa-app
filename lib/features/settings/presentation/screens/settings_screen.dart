@@ -78,7 +78,7 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                             OutlinedButton(
-                              onPressed: () {},
+                              onPressed: () => context.go('/settings/account-information'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 side: const BorderSide(color: Colors.white),
@@ -117,19 +117,19 @@ class SettingsScreen extends ConsumerWidget {
                       context,
                       title: 'settings.accountInformation'.tr(),
                       icon: Icons.person_outline,
-                      onTap: () {},
+                      onTap: () => context.go('/settings/account-information'),
                     ),
                     _buildSettingItem(
                       context,
                       title: 'settings.changePassword'.tr(),
                       icon: Icons.lock_outline,
-                      onTap: () {},
+                      onTap: () => context.go('/settings/change-password'),
                     ),
                     _buildSettingItem(
                       context,
                       title: 'settings.notificationSettings'.tr(),
                       icon: Icons.notifications_outlined,
-                      onTap: () {},
+                      onTap: () => context.go('/settings/notification-settings'),
                     ),
                   ],
                 ),
@@ -168,7 +168,7 @@ class SettingsScreen extends ConsumerWidget {
                       context,
                       title: 'settings.aboutApp'.tr(),
                       icon: Icons.info_outline,
-                      onTap: () {},
+                      onTap: () => context.go('/settings/about-app'),
                     ),
                   ],
                 ),
@@ -190,13 +190,31 @@ class SettingsScreen extends ConsumerWidget {
                       context,
                       title: 'settings.privacyPolicy'.tr(),
                       icon: Icons.privacy_tip_outlined,
-                      onTap: () {},
+                      onTap: () {
+                        // Show a dialog or navigate to privacy policy page
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Privacy Policy coming soon'),
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
                     ),
                     _buildSettingItem(
                       context,
                       title: 'settings.termsAndConditions'.tr(),
                       icon: Icons.description_outlined,
-                      onTap: () {},
+                      onTap: () {
+                        // Show a dialog or navigate to terms & conditions page
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Terms & Conditions coming soon'),
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

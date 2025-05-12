@@ -70,6 +70,23 @@ class AppRouter {
         path: '/settings',
         builder: (context, state) => SettingsModule.settingsScreen,
       ),
+      // Settings sub-screens
+      GoRoute(
+        path: '/settings/account-information',
+        builder: (context, state) => SettingsModule.accountInformationScreen,
+      ),
+      GoRoute(
+        path: '/settings/change-password',
+        builder: (context, state) => SettingsModule.changePasswordScreen,
+      ),
+      GoRoute(
+        path: '/settings/notification-settings',
+        builder: (context, state) => SettingsModule.notificationSettingsScreen,
+      ),
+      GoRoute(
+        path: '/settings/about-app',
+        builder: (context, state) => SettingsModule.aboutAppScreen,
+      ),
     ],
   );
 } 
