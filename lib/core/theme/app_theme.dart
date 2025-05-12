@@ -39,6 +39,9 @@ class AppTheme {
         titleTextStyle: _textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w600,
         ),
+        iconTheme: IconThemeData(
+          color: AppColors.foreground,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -183,6 +186,9 @@ class AppTheme {
         centerTitle: true,
         titleTextStyle: _textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w600,
+          color: AppColors.darkForeground,
+        ),
+        iconTheme: IconThemeData(
           color: AppColors.darkForeground,
         ),
       ),

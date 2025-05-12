@@ -103,6 +103,7 @@
   },
   "settings": {
     "settings": "Settings",
+    "title": "Settings",
     "editProfile": "Edit Profile",
     "accountSettings": "Account Settings",
     "accountInformation": "Account Information",
@@ -110,6 +111,10 @@
     "notificationSettings": "Notification Settings",
     "appSettings": "App Settings",
     "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "themeApplied": "theme applied",
     "language": "Language",
     "english": "English",
     "arabic": "Arabic",

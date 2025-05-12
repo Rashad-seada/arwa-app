@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_starter_package/core/config/locale_constants.dart';
 import 'package:flutter_starter_package/core/providers/locale_provider.dart';
+import 'package:flutter_starter_package/core/providers/theme_provider.dart';
 import 'package:flutter_starter_package/core/theme/app_colors.dart';
 import 'package:flutter_starter_package/core/widgets/gradient_container.dart';
 import 'package:flutter_starter_package/core/widgets/themed_back_button.dart';
@@ -150,7 +151,10 @@ class SettingsScreen extends ConsumerWidget {
                       context,
                       title: 'settings.theme'.tr(),
                       icon: Icons.palette_outlined,
-                      trailing: _buildThemeSelector(context),
+                      trailing: Container(
+                        width: 160,
+                        child: _buildThemeSelector(context, ref),
+                      ),
                       onTap: () {},
                     ),
                     _buildSettingItem(
@@ -297,10 +301,12 @@ class SettingsScreen extends ConsumerWidget {
     Widget? trailing,
     required VoidCallback onTap,
   }) {
+    final hasTrailing = trailing != null;
+    
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: hasTrailing ? null : onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -347,56 +353,136 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildThemeSelector(BuildContext context) {
-    return Row(
+  Widget _buildThemeSelector(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    
+    return Wrap(
+      alignment: WrapAlignment.end,
+      spacing: 12,
+      children: [
+        // Light theme option
+        _buildThemeOption(
+          context,
+          label: 'settings.themeLight'.tr(),
+          isSelected: themeMode == ThemeMode.light,
+          color: AppColors.background,
+          icon: Icons.light_mode,
+          onTap: () => ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.light),
+        ),
+        
+        // Dark theme option
+        _buildThemeOption(
+          context,
+          label: 'settings.themeDark'.tr(),
+          isSelected: themeMode == ThemeMode.dark,
+          color: AppColors.darkBackground,
+          icon: Icons.dark_mode,
+          onTap: () => ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.dark),
+        ),
+        
+        // System theme option
+        _buildThemeOption(
+          context,
+          label: 'settings.themeSystem'.tr(),
+          isSelected: themeMode == ThemeMode.system,
+          color: Colors.transparent,
+          icon: Icons.settings_suggest,
+          isGradient: true,
+          onTap: () => ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.system),
+        ),
+      ],
+    );
+  }
+  
+  // Theme change feedback
+  void _showThemeChangeFeedback(BuildContext context, ThemeMode mode) {
+    final String message = mode == ThemeMode.light 
+        ? 'settings.themeLight'.tr() 
+        : mode == ThemeMode.dark 
+            ? 'settings.themeDark'.tr() 
+            : 'settings.themeSystem'.tr();
+    
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${message} ${'settings.themeApplied'.tr()}'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.primary,
+      ),
+    );
+  }
+  
+  Widget _buildThemeOption(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required Color color,
+    required IconData icon,
+    bool isGradient = false,
+    required VoidCallback onTap,
+  }) {
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: Theme.of(context).brightness == Brightness.light
-                  ? AppColors.primary
-                  : Colors.transparent,
-              width: 2,
+        InkWell(
+          onTap: () {
+            onTap();
+            if (!isSelected) {
+              // Show feedback when theme changes
+              final ThemeMode newMode;
+              if (label == 'settings.themeLight'.tr()) {
+                newMode = ThemeMode.light;
+              } else if (label == 'settings.themeDark'.tr()) {
+                newMode = ThemeMode.dark;
+              } else {
+                newMode = ThemeMode.system;
+              }
+              _showThemeChangeFeedback(context, newMode);
+            }
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isGradient ? null : color,
+              gradient: isGradient
+                  ? LinearGradient(
+                      colors: [AppColors.background, AppColors.darkBackground],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : Colors.transparent,
+                width: 2,
+              ),
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                size: 20,
+                color: isSelected 
+                    ? AppColors.primary 
+                    : (isGradient 
+                        ? AppColors.muted 
+                        : (color == AppColors.darkBackground 
+                            ? Colors.white.withOpacity(0.8) 
+                            : AppColors.muted)),
+              ),
             ),
           ),
-          child: Theme.of(context).brightness == Brightness.light
-              ? Center(
-                  child: Icon(
-                    Icons.check,
-                    size: 16,
-                    color: AppColors.primary,
-                  ),
-                )
-              : null,
         ),
-        const SizedBox(width: 8),
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: AppColors.darkBackground,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.primary
-                  : Colors.transparent,
-              width: 2,
-            ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: isSelected ? AppColors.primary : AppColors.muted,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
-          child: Theme.of(context).brightness == Brightness.dark
-              ? Center(
-                  child: Icon(
-                    Icons.check,
-                    size: 16,
-                    color: AppColors.primary,
-                  ),
-                )
-              : null,
         ),
       ],
     );

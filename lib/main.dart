@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_starter_package/core/config/locale_constants.dart';
+import 'package:flutter_starter_package/core/providers/theme_provider.dart';
 import 'package:flutter_starter_package/core/theme/app_theme.dart';
 import 'package:flutter_starter_package/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_starter_package/features/auth/domain/providers/auth_provider.dart';
@@ -11,6 +13,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   
+  // Set preferred orientations
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  
   // Create a ProviderContainer with overrides
   final container = ProviderContainer(
     overrides: [
@@ -18,6 +26,9 @@ void main() async {
       authRepositoryProvider.overrideWith((ref) => AuthRepositoryImpl()),
     ],
   );
+  
+  // Pre-initialize the theme to reduce flicker
+  await container.read(themeModeProvider.notifier).loadThemeMode();
   
   runApp(
     EasyLocalization(
@@ -37,6 +48,9 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the theme mode provider to rebuild when theme changes
+    final themeMode = ref.watch(themeModeProvider);
+    
     return MaterialApp.router(
       title: 'app.title'.tr(),
       localizationsDelegates: context.localizationDelegates,
@@ -44,7 +58,7 @@ class MyApp extends ConsumerWidget {
       locale: context.locale,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       routerConfig: AppRouter.router,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {

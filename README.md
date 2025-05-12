@@ -194,13 +194,9 @@ Use AppScaffold, AppButton, AppCard, AppInput to unify layout and interaction
 
 Create a global ThemeExtension for custom tokens
 
-## Fonts Used
-The application uses the Almarai font family, which needs to be downloaded manually:
+🌐🌓 Flutter Guidelines – Localization (Arabic & English) + Dark/Light Mode in the entire application
+🌍 Localization (Arabic 🇸🇦 & English 🇺🇸)
+✅ Packages
+Use the built-in Flutter localization and flutter_localizations package.
 
-1. Create a directory: `assets/fonts/` if it doesn't exist yet
-2. Download the following font files to the `assets/fonts/` directory:
-   - [Almarai-Regular.ttf](https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Regular.ttf)
-   - [Almarai-Bold.ttf](https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Bold.ttf)
-   - [Almarai-Light.ttf](https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-Light.ttf)
-   - [Almarai-ExtraBold.ttf](https://github.com/google/fonts/raw/main/ofl/almarai/Almarai-ExtraBold.ttf)
-3. Ensure your `pubspec.yaml` file includes these fonts as specified in the Fonts section
+Optionally, you can use easy_localization 
