@@ -26,7 +26,7 @@ class ThemedBackButton extends StatelessWidget {
           context.pop();
         } else {
           // Fallback to initial route if we can't pop
-          context.go('/settings');
+          context.go('/home');
         }
       },
     );
