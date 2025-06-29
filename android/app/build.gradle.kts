@@ -11,12 +11,12 @@ android {
     ndkVersion = "28.0.13004108"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -37,8 +37,20 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    // Add this to increase memory for the build process
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Add sign_in_with_apple dependencies explicitly to ensure compatibility
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
 }

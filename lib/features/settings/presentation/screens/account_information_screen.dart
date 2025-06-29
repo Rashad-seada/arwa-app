@@ -27,7 +27,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
   void initState() {
     super.initState();
     final user = ref.read(authProvider).user;
-    _nameController = TextEditingController(text: user?.name ?? '');
+    _nameController = TextEditingController(text: user?.full_name ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
     // Use email as placeholder for username since it's not in the User model
     _usernameController = TextEditingController(text: _generateUsernamePlaceholder(user?.email ?? ''));
@@ -52,7 +52,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
       if (!_isEditing) {
         // Reset to original values when canceling edit
         final user = ref.read(authProvider).user;
-        _nameController.text = user?.name ?? '';
+        _nameController.text = user?.full_name ?? '';
         _emailController.text = user?.email ?? '';
         _usernameController.text = _generateUsernamePlaceholder(user?.email ?? '');
       }
@@ -123,8 +123,8 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                       radius: 50,
                       backgroundColor: AppColors.primary.withOpacity(0.1),
                       child: Text(
-                        user?.name.isNotEmpty == true 
-                          ? user!.name.substring(0, 1).toUpperCase() 
+                        user?.full_name.isNotEmpty == true
+                          ? user!.full_name.substring(0, 1).toUpperCase()
                           : 'U',
                         style: Theme.of(context).textTheme.displayMedium?.copyWith(
                           color: AppColors.primary,

@@ -52,8 +52,8 @@ class AuthRepositoryImpl implements AuthRepository {
     // Create a new user
     final user = User(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: name,
       email: normalizedEmail,
+      full_name: name,
     );
     
     _users[normalizedEmail] = user;
@@ -130,7 +130,8 @@ class AuthRepositoryImpl implements AuthRepository {
         // Create a new user with Google info
         user = User(
           id: googleUser.id,
-          name: googleUser.displayName ?? 'Google User',
+          full_name: googleUser.displayName ?? 'Google User',
+
           email: normalizedEmail,
         );
         _users[normalizedEmail] = user;

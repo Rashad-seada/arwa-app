@@ -1,12 +1,12 @@
 class User {
   final String id;
-  final String name;
+  final String full_name;
   final String email;
   final String? photoUrl;
 
   User({
     required this.id,
-    required this.name,
+    required this.full_name,
     required this.email,
     this.photoUrl,
   });
@@ -14,18 +14,18 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'],
-      name: json['name'],
+      full_name: json['full_name'],
       email: json['email'],
-      photoUrl: json['photoUrl'],
+      photoUrl: json['avatar_url'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
+      'full_name': full_name,
       'email': email,
-      'photoUrl': photoUrl,
+      'avatar_url': photoUrl,
     };
   }
 } 

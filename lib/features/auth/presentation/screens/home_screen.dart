@@ -39,7 +39,7 @@ class HomeScreen extends ConsumerWidget {
                 radius: 60,
                 backgroundColor: AppColors.primary.withOpacity(0.1),
                 child: Text(
-                  user?.name.substring(0, 1) ?? 'U',
+                  user?.full_name.substring(0, 1) ?? 'U',
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
                     color: AppColors.primary,
                   ),
@@ -47,7 +47,7 @@ class HomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Welcome ${user?.name ?? ''}!',
+                'Welcome ${user?.full_name ?? ''}!',
                 style: Theme.of(context).textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),

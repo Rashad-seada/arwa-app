@@ -3,15 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_starter_package/core/config/locale_constants.dart';
+import 'package:flutter_starter_package/core/config/supabase_config.dart';
 import 'package:flutter_starter_package/core/providers/theme_provider.dart';
 import 'package:flutter_starter_package/core/theme/app_theme.dart';
-import 'package:flutter_starter_package/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:flutter_starter_package/features/auth/data/repositories/supabase_auth_repository.dart';
 import 'package:flutter_starter_package/features/auth/domain/providers/auth_provider.dart';
 import 'package:flutter_starter_package/routes/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  
+  // Initialize Supabase
+  await SupabaseConfig.initialize();
   
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
@@ -22,8 +26,8 @@ void main() async {
   // Create a ProviderContainer with overrides
   final container = ProviderContainer(
     overrides: [
-      // Initialize the auth repository provider with an implementation
-      authRepositoryProvider.overrideWith((ref) => AuthRepositoryImpl()),
+      // Initialize the auth repository provider with Supabase implementation
+      authRepositoryProvider.overrideWith((ref) => SupabaseAuthRepository()),
     ],
   );
   

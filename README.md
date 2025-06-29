@@ -134,6 +134,83 @@ Organize features and files by purpose, not widget type
 
 Follow Dart naming conventions (camelCase, PascalCase)
 
+🔌 Supabase Integration
+This project includes full integration with Supabase for:
+
+- Authentication (email/password, OAuth providers)
+- Database operations (CRUD)
+- Storage (file uploads)
+- Realtime subscriptions
+
+### Setup Supabase
+
+1. Create a Supabase project at [https://supabase.com](https://supabase.com)
+2. Get your Supabase URL and anon key from the project settings
+3. Update the `lib/core/config/supabase_config.dart` file with your credentials:
+
+```dart
+static const String supabaseUrl = 'YOUR_SUPABASE_URL';
+static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+```
+
+### Database Schema
+
+Create the following tables in your Supabase project:
+
+1. **profiles** table (linked to auth.users):
+```sql
+create table public.profiles (
+  id uuid references auth.users on delete cascade not null primary key,
+  name text,
+  avatar_url text,
+  updated_at timestamp with time zone default now()
+);
+
+-- Enable RLS
+alter table public.profiles enable row level security;
+
+-- Create policies
+create policy "Public profiles are viewable by everyone."
+  on profiles for select
+  using ( true );
+
+create policy "Users can insert their own profile."
+  on profiles for insert
+  with check ( auth.uid() = id );
+
+create policy "Users can update their own profile."
+  on profiles for update
+  using ( auth.uid() = id );
+```
+
+2. Set up storage buckets:
+   - Create an "avatars" bucket for profile pictures
+   - Set up appropriate bucket policies
+
+### Using Supabase in the App
+
+The app uses repository pattern to abstract Supabase operations:
+
+- `SupabaseAuthRepository` - Handles authentication
+- `SupabaseDatabase` - Generic database operations
+- `UserProfileRepository` - Profile-specific operations
+
+Example usage:
+
+```dart
+// Authentication
+final authNotifier = ref.read(authProvider.notifier);
+await authNotifier.login(email, password);
+
+// Database operations
+final database = ref.read(databaseProvider);
+final users = await database.getAll('users', limit: 10);
+
+// User profile
+final profileNotifier = ref.read(userProfileProvider.notifier);
+await profileNotifier.updateProfile({'name': 'New Name'});
+```
+
 📦 Packages Used
 Purpose	Package
 State Management	flutter_riverpod / bloc
@@ -141,7 +218,7 @@ UI Components	flutter_hooks, gap, heroicons
 Routing	go_router
 Dependency Injection	get_it, riverpod
 Forms & Validation	reactive_forms, formz
-HTTP / Data	dio, retrofit, json_serializable
+HTTP / Data	dio, retrofit, json_serializable, supabase_flutter
 Persistence	hive, shared_preferences
 Animations	flutter_animate, motion
 

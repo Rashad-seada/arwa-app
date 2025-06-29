@@ -46,8 +46,8 @@ class SettingsScreen extends ConsumerWidget {
                         radius: 40,
                         backgroundColor: Colors.white.withOpacity(0.3),
                         child: Text(
-                          user?.name.isNotEmpty == true 
-                              ? user!.name.substring(0, 1).toUpperCase() 
+                          user?.full_name.isNotEmpty == true
+                              ? user!.full_name.substring(0, 1).toUpperCase()
                               : 'U',
                           style: Theme.of(context).textTheme.displaySmall?.copyWith(
                                 color: Colors.white,
@@ -61,7 +61,7 @@ class SettingsScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              user?.name ?? 'User',
+                              user?.full_name ?? 'User',
                               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
