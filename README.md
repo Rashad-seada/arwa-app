@@ -18,6 +18,16 @@ lib/
 │   │   ├── domain/          # Entities & use cases
 │   │   ├── presentation/    # UI, screens, state management
 │   │   └── auth_module.dart # Entry point
+│   ├── glaucoma/            # Glaucoma detection feature
+│   │   ├── data/            # API, repositories
+│   │   ├── domain/          # Models & providers
+│   │   ├── presentation/    # UI, screens
+│   │   └── glaucoma_module.dart # Entry point
+│   ├── medication/          # Medication reminder feature
+│   │   ├── data/            # API, repositories
+│   │   ├── domain/          # Models & providers
+│   │   ├── presentation/    # UI, screens, widgets
+│   │   └── medication_module.dart # Entry point
 │   ├── profile/             # Profile feature
 │   └── .../
 │
@@ -183,9 +193,80 @@ create policy "Users can update their own profile."
   using ( auth.uid() = id );
 ```
 
-2. Set up storage buckets:
+2. **eye_scans** table (for glaucoma feature):
+```sql
+create table public.eye_scans (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  title text not null,
+  description text,
+  image_path text not null,
+  created_at timestamp with time zone default now() not null,
+  updated_at timestamp with time zone default now()
+);
+
+-- Enable RLS
+alter table public.eye_scans enable row level security;
+
+-- Create policies
+create policy "Users can view their own eye scans"
+  on eye_scans for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert their own eye scans"
+  on eye_scans for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update their own eye scans"
+  on eye_scans for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete their own eye scans"
+  on eye_scans for delete
+  using (auth.uid() = user_id);
+```
+
+3. **medication_reminders** table (for medication reminder feature):
+```sql
+create table public.medication_reminders (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  medication_name text not null,
+  description text,
+  reminder_times jsonb not null,
+  days_of_week integer[] not null,
+  is_active boolean not null default true,
+  created_at timestamp with time zone default now() not null,
+  updated_at timestamp with time zone default now() not null
+);
+
+-- Enable RLS
+alter table public.medication_reminders enable row level security;
+
+-- Create policies
+create policy "Users can view their own medication reminders"
+  on medication_reminders for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert their own medication reminders"
+  on medication_reminders for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update their own medication reminders"
+  on medication_reminders for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete their own medication reminders"
+  on medication_reminders for delete
+  using (auth.uid() = user_id);
+```
+
+4. Set up storage buckets:
    - Create an "avatars" bucket for profile pictures
+   - Create an "eye-scans" bucket for glaucoma scan images (note: use hyphen, not underscore)
    - Set up appropriate bucket policies
+
+For detailed setup instructions, refer to the [SUPABASE_SETUP_GUIDE.md](SUPABASE_SETUP_GUIDE.md) file.
 
 ### Using Supabase in the App
 
@@ -194,6 +275,8 @@ The app uses repository pattern to abstract Supabase operations:
 - `SupabaseAuthRepository` - Handles authentication
 - `SupabaseDatabase` - Generic database operations
 - `UserProfileRepository` - Profile-specific operations
+- `SupabaseEyeScanRepository` - Eye scan operations for glaucoma feature
+- `SupabaseMedicationRepository` - Medication reminder operations
 
 Example usage:
 
@@ -209,7 +292,66 @@ final users = await database.getAll('users', limit: 10);
 // User profile
 final profileNotifier = ref.read(userProfileProvider.notifier);
 await profileNotifier.updateProfile({'name': 'New Name'});
+
+// Eye scans
+final eyeScanNotifier = ref.read(eyeScanProvider.notifier);
+await eyeScanNotifier.createEyeScan(scan);
+
+// Medication reminders
+final medicationNotifier = ref.read(medicationProvider.notifier);
+await medicationNotifier.createMedicationReminder(
+  medicationName: 'Aspirin',
+  description: 'For headache',
+  reminderTimes: [DateTime(2022, 1, 1, 8, 0), DateTime(2022, 1, 1, 20, 0)],
+  daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+);
 ```
+
+## Glaucoma Feature
+
+This app includes a feature for glaucoma patients to:
+
+- Capture eye images using the device camera
+- Save and organize eye scans with titles and descriptions
+- View a history of all saved scans
+- Track changes over time
+
+The feature uses:
+- Camera and image picker integration
+- Secure storage of images in Supabase
+- Clean architecture pattern with proper separation of concerns
+
+To use this feature:
+1. Ensure you've set up the eye_scans table and eye-scans storage bucket in Supabase
+2. Navigate to the Eye Scan screen from the home screen
+3. Follow the on-screen instructions to capture or select an image
+4. Add a title and optional description
+5. Save the scan to view it later
+
+## Medication Reminder Feature
+
+This app includes a medication reminder feature for patients to:
+
+- Create medication reminders with custom schedules
+- Set multiple reminder times per day
+- Select specific days of the week for each medication
+- Add descriptions and notes for each medication
+- Enable/disable reminders as needed
+- View all medication reminders in one place
+
+The feature uses:
+- Riverpod for state management
+- Supabase for data persistence
+- Clean architecture pattern
+- Intuitive UI for managing complex schedules
+
+To use this feature:
+1. Ensure you've set up the medication_reminders table in Supabase
+2. Navigate to the Medication Reminders screen from the home screen
+3. Tap the "+" button to add a new reminder
+4. Enter medication details, set times and days
+5. Save the reminder
+6. Edit or delete reminders as needed from the main list
 
 📦 Packages Used
 Purpose	Package

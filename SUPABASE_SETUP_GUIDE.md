@@ -1,99 +1,249 @@
-# Supabase Setup Guide for Flutter Starter Package
+# Supabase Setup Guide
 
-This guide will walk you through setting up your Supabase project for the Flutter Starter Package.
+This guide will help you set up your Supabase project for this Flutter starter package.
 
 ## 1. Create a Supabase Project
 
-1. Go to [https://supabase.com](https://supabase.com) and sign in or create an account
-2. Click "New Project" to create a new project
-3. Choose an organization, enter a project name, and set a database password
-4. Choose a region closest to your users
-5. Click "Create new project" and wait for it to be created (this may take a few minutes)
+1. Go to [Supabase](https://supabase.com/) and sign in or create an account
+2. Create a new project and give it a name
+3. Wait for the database to be ready
 
-## 2. Get Your API Keys
+## 2. Set Up Authentication
 
-1. Once your project is created, go to the project dashboard
-2. In the left sidebar, click on "Project Settings"
-3. Click on "API" in the settings menu
-4. Copy the "URL" under "Project URL"
-5. Copy the "anon" key under "Project API Keys"
-6. Update `lib/core/config/supabase_config.dart` with these values:
+Supabase provides authentication out of the box. For this starter package, we'll enable:
 
-```dart
-static const String supabaseUrl = 'YOUR_SUPABASE_URL';
-static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
-```
+1. Email authentication
+2. Google OAuth
+3. Apple OAuth (if needed)
+
+### Email Authentication
+
+This is enabled by default. You can customize settings in the Authentication section of your Supabase dashboard.
+
+### Google OAuth
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Navigate to "APIs & Services" > "Credentials"
+4. Click "Create Credentials" > "OAuth client ID"
+5. Configure the OAuth consent screen
+6. Create a Web client ID
+7. Add your Supabase authentication callback URL: `https://<your-project>.supabase.co/auth/v1/callback`
+8. Copy the Client ID and Client Secret
+9. In your Supabase dashboard, go to Authentication > Providers > Google
+10. Enable Google and paste your Client ID and Client Secret
+
+### Apple OAuth (Optional)
+
+1. Go to [Apple Developer Portal](https://developer.apple.com/)
+2. Create a new App ID if you don't have one
+3. Enable "Sign In with Apple" capability
+4. Create a Services ID
+5. Configure the domain and return URL
+6. Generate a key
+7. In your Supabase dashboard, go to Authentication > Providers > Apple
+8. Enable Apple and fill in the required information
 
 ## 3. Set Up Database Tables
 
-1. In the Supabase dashboard, go to the "SQL Editor" in the left sidebar
-2. Click "New Query"
-3. Copy and paste the SQL commands from the `supabase_setup.sql` file
-4. Click "Run" to execute the SQL commands
+Run the following SQL in the SQL Editor in your Supabase dashboard:
 
-The SQL script will create the following tables:
-- `profiles`: Stores user profile information
-- `user_settings`: Stores user preferences like theme and language
-- `notifications`: Stores user notifications
+```sql
+-- Create profiles table
+CREATE TABLE public.profiles (
+  id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL PRIMARY KEY,
+  full_name TEXT,
+  avatar_url TEXT,
+  email TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+);
 
-It also sets up Row Level Security (RLS) policies to secure your data and creates a trigger to automatically create profile and settings entries when a new user signs up.
+-- Enable Row Level Security
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Create policies
+CREATE POLICY "Public profiles are viewable by everyone." 
+  ON public.profiles 
+  FOR SELECT 
+  USING (true);
+
+CREATE POLICY "Users can insert their own profile." 
+  ON public.profiles 
+  FOR INSERT 
+  WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile." 
+  ON public.profiles 
+  FOR UPDATE 
+  USING (auth.uid() = id);
+
+-- Create trigger for updated_at
+CREATE OR REPLACE FUNCTION public.handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER profiles_updated_at
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.handle_updated_at();
+
+-- Create eyeScans table for glaucoma feature
+CREATE TABLE IF NOT EXISTS public.eyeScans (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  image_path TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.eyeScans ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for eyeScans table
+-- Users can view their own scans
+CREATE POLICY "Users can view their own eye scans" 
+  ON public.eyeScans 
+  FOR SELECT 
+  USING (auth.uid() = user_id);
+
+-- Users can insert their own scans
+CREATE POLICY "Users can insert their own eye scans" 
+  ON public.eyeScans 
+  FOR INSERT 
+  WITH CHECK (auth.uid() = user_id);
+
+-- Users can update their own scans
+CREATE POLICY "Users can update their own eye scans" 
+  ON public.eyeScans 
+  FOR UPDATE 
+  USING (auth.uid() = user_id);
+
+-- Users can delete their own scans
+CREATE POLICY "Users can delete their own eye scans" 
+  ON public.eyeScans 
+  FOR DELETE 
+  USING (auth.uid() = user_id);
+
+-- Create trigger for eyeScans updated_at
+CREATE TRIGGER eyeScans_updated_at
+  BEFORE UPDATE ON public.eyeScans
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.handle_updated_at();
+```
 
 ## 4. Set Up Storage Buckets
 
-1. In the Supabase dashboard, go to "Storage" in the left sidebar
-2. Click "Create a new bucket"
-3. Enter "avatars" as the bucket name
-4. Choose "Public" bucket type (we'll secure it with policies)
-5. Click "Create bucket"
+### Create Avatars Bucket
 
-## 5. Set Up Storage Policies
+1. Go to Storage in your Supabase dashboard
+2. Click "Create Bucket"
+3. Name it "avatars"
+4. Choose whether to make it public or private (public is recommended for avatars)
+5. Create the following policies:
 
-1. Click on the "avatars" bucket you just created
-2. Go to the "Policies" tab
-3. Add the following policies:
+```sql
+-- For public bucket:
+CREATE POLICY "Avatar images are publicly accessible."
+  ON storage.objects
+  FOR SELECT
+  USING (bucket_id = 'avatars');
 
-### For uploads (INSERT):
-- Policy name: "Allow authenticated users to upload their own avatar"
-- Policy definition: 
+-- For authenticated uploads:
+CREATE POLICY "Users can upload their own avatar."
+  ON storage.objects
+  FOR INSERT
+  WITH CHECK (
+    bucket_id = 'avatars' AND
+    auth.role() = 'authenticated' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- For user-specific updates:
+CREATE POLICY "Users can update their own avatar."
+  ON storage.objects
+  FOR UPDATE
+  USING (
+    bucket_id = 'avatars' AND
+    auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+-- For user-specific deletes:
+CREATE POLICY "Users can delete their own avatar."
+  ON storage.objects
+  FOR DELETE
+  USING (
+    bucket_id = 'avatars' AND
+    auth.uid()::text = (storage.foldername(name))[1]
+  );
 ```
-bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]
+
+### Create Eye Scans Bucket
+
+1. Go to Storage in your Supabase dashboard
+2. Click "Create Bucket"
+3. Name it "eyeScans"
+4. Choose whether to make it public or private (public is recommended for easy access)
+5. Create the following policies:
+
+```sql
+-- For public bucket:
+CREATE POLICY "Eye scan images are publicly accessible."
+  ON storage.objects
+  FOR SELECT
+  USING (bucket_id = 'eyeScans');
+
+-- For authenticated uploads:
+CREATE POLICY "Users can upload their own eye scans."
+  ON storage.objects
+  FOR INSERT
+  WITH CHECK (
+    bucket_id = 'eyeScans' AND
+    auth.role() = 'authenticated' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- For user-specific updates:
+CREATE POLICY "Users can update their own eye scans."
+  ON storage.objects
+  FOR UPDATE
+  USING (
+    bucket_id = 'eyeScans' AND
+    auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+-- For user-specific deletes:
+CREATE POLICY "Users can delete their own eye scans."
+  ON storage.objects
+  FOR DELETE
+  USING (
+    bucket_id = 'eyeScans' AND
+    auth.uid()::text = (storage.foldername(name))[1]
+  );
 ```
 
-### For downloads (SELECT):
-- Policy name: "Allow public access to read avatars"
-- Policy definition: `bucket_id = 'avatars'`
-- Select "Apply policy to: SELECT"
-- Check "Enable policy"
+## 5. Configure Your Flutter App
 
-## 6. Set Up Authentication Providers
+1. In your Supabase project, go to Project Settings > API
+2. Copy the URL and anon key
+3. Update the `lib/core/config/supabase_config.dart` file with these values:
 
-1. In the Supabase dashboard, go to "Authentication" in the left sidebar
-2. Go to the "Providers" tab
-3. Enable "Email" provider and configure as needed
-4. For Google authentication:
-   - Enable "Google" provider
-   - Create a Google OAuth application in the Google Cloud Console
-   - Add your Supabase authentication callback URL to the Google OAuth app
-   - Copy the Client ID and Client Secret to Supabase
+```dart
+class SupabaseConfig {
+  static const String supabaseUrl = 'YOUR_SUPABASE_URL';
+  static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+}
+```
 
-## 7. Test Your Setup
+## 6. Testing Your Setup
 
-1. Run your Flutter app
-2. Try to register a new user
-3. Check the Supabase dashboard to verify that:
-   - The user was created in the Auth section
-   - A profile was automatically created in the `profiles` table
-   - Settings were automatically created in the `user_settings` table
-
-## Troubleshooting
-
-- If the automatic profile creation isn't working, check the Supabase logs for any errors in the trigger function
-- Ensure your RLS policies are correctly set up to allow the operations your app needs
-- For storage issues, check that your bucket policies are correctly configured
-
-## Next Steps
-
-- Consider adding more tables as your app grows
-- Set up additional authentication providers if needed
-- Configure email templates for authentication emails
-- Set up webhooks for important events 
+1. Run the app and try to register a new user
+2. Verify that the user is created in the Auth section of your Supabase dashboard
+3. Check that a corresponding entry is created in the profiles table
+4. Test the eye scan feature by adding a new scan and verifying it appears in both the database and storage 

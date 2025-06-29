@@ -101,23 +101,27 @@ class HomeScreen extends ConsumerWidget {
                   children: [
                     _buildDashboardCard(
                       context,
+                      title: 'eye_scan.title'.tr(),
+                      icon: Icons.visibility,
+                      color: Colors.purple,
+                      onTap: () {
+                        context.push('/eye-scans');
+                      },
+                    ),
+                    _buildDashboardCard(
+                      context,
+                      title: 'medication.title'.tr(),
+                      icon: Icons.medication_outlined,
+                      color: Colors.orange,
+                      onTap: () {
+                        context.push('/medication-reminders');
+                      },
+                    ),
+                    _buildDashboardCard(
+                      context,
                       title: 'home.profile'.tr(),
                       icon: Icons.person,
                       color: AppColors.primary,
-                      onTap: () {},
-                    ),
-                    _buildDashboardCard(
-                      context,
-                      title: 'home.messages'.tr(),
-                      icon: Icons.chat_bubble,
-                      color: AppColors.accent,
-                      onTap: () {},
-                    ),
-                    _buildDashboardCard(
-                      context,
-                      title: 'home.tasks'.tr(),
-                      icon: Icons.task_alt,
-                      color: AppColors.success,
                       onTap: () {},
                     ),
                     _buildDashboardCard(
@@ -134,24 +138,7 @@ class HomeScreen extends ConsumerWidget {
                 
                 const SizedBox(height: 32),
                 
-                // Recent activity section
-                Text(
-                  'home.recentActivity'.tr(),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 16),
-                
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: 3,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    return _buildActivityItem(context, index);
-                  },
-                ),
+
               ],
             ),
           ),
@@ -186,7 +173,9 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(
               icon,
